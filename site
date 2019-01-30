@@ -1,0 +1,138 @@
+#!/bin/bash
+
+help_msg(){
+	
+	echo ""
+	
+	if [ "${1+xxx}" ];
+		then
+		echo -e $1
+		echo ""
+	fi
+	
+	echo -e "\e[36m\e[1m__Jekyll Blog Manager__\e[0m"
+	echo ""
+	echo "A utility to help manage and post any Jekyll blog and push it to Github Pages."
+	echo "Make sure you are inside a project folder."
+	echo ""
+	echo -e "\e[38;5;222mUsage Instructions:\e[0m"
+	
+	echo ""
+	echo -e " \e[92mpost\e[0m" 
+	echo "		Opens Sublime Text with new blog post file."
+	
+	echo -e " \e[92mfiles\e[0m" 
+	echo "		Opens Nautilus with the Jekyll project directory."
+	
+	echo -e " \e[92mopen\e[0m" 
+	echo "		Opens Sublime Text with the Jekyll project directory."
+	
+	echo -e " \e[92mpush\e[0m" 
+	echo -e "		Auto \e[31madd+commit+push\e[0m to Github Pages repository."
+	
+	echo -e " \e[92mpublish\e[0m" 
+	echo -e "		Build/Complile + publish via Surge ."
+
+	echo -e " \e[92mdemo\e[0m" 
+	echo -e "		Run Jekyll site locally at http://127.0.0.1:4000 . "
+
+	echo -e " \e[92mmeta\e[0m" 
+	echo -e "		Edit this script. "
+
+	
+	echo -e "\e[38;5;222mOptional args:\e[0m"
+	echo ""
+	echo -e " \e[92m-h\e[0m"
+	echo "		Help and documentation."
+	echo ""
+	
+}
+
+check(){
+	if [ ! -f _config.yml ]; then
+    
+    echo ""
+	echo -e "\e[31m\e[1mNot A Jekyll Folder..\e[0m"
+	echo ""
+
+	exit 1;
+	fi
+}
+help(){
+	help_msg
+	echo ""
+	echo -e "\e[1mHelp Text\e[0m"
+	echo -e "Lorem ipsum dolor sit amet, consectetur adipisicing elit.\nQuia libero voluptatum veniam laudantium corporis, illo enim"
+	echo -e "\nipsa ut voluptatem similique possimus delectus vitae quisquam.\nDistinctio molestias dolor,"
+	echo -e "\nsuscipit doloremque ipsa."
+	exit 1;
+
+}
+
+if [[ $# -eq 0 ]] ; then
+	help_msg
+	exit 1;
+fi
+
+today(){
+	check
+	subl . 
+	wait 
+	title=$(pwd)/_posts/$(date +%Y-%m-%d)-post.md
+	touch $title
+	echo -e '---\nlayout: post\ntitle: "" \n\n---' > $title
+	subl $title -a
+}
+
+push(){
+	check
+	echo  -e "\e[38;5;222mPushing site to GitHub Pages..\e[0m"
+	echo ""
+	git add .
+	git commit -m "$(date)"
+	git push origin master
+}
+
+
+compile(){
+	check
+	echo  -e "\e[38;5;222mBuilding Jekyll site.\e[0m"
+	echo ""
+	jekyll build
+	surge _site
+}
+
+serve(){
+	check
+	echo  -e "\e[38;5;222mRunning Jekyll site locally...\e[0m"
+	echo ""
+	echo  -e "\e[38;5;222mOpen browser at http://127.0.0.1:4000 to see the site.\e[0m"
+	echo ""
+	jekyll serve --watch
+	# xdg-open http://127.0.0.1:4000 &
+
+}
+
+
+while [ $# -gt 0 ]
+do
+    case "$1" in
+       	open)  subl . &;;
+		files) xdg-open . &;;
+		post) today;;
+		push) push;;
+		publish) compile;;
+		demo) serve;;
+		meta) subl ~/bin/site ;;
+		-h)  help;;
+		*)  
+			# help_msg "\e[31m\e[1mWrong arguments!\e[0m"
+			echo ""
+			echo -e "\e[31m\e[1mInvalid Option, use -h flag for help.\e[0m"
+			echo ""
+
+			exit 1;
+			break;
+ 	esac
+    shift
+done
